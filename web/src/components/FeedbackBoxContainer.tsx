@@ -6,8 +6,10 @@ import {
   createFeedbackEndpoint,
   DEFAULT_FEEDBACK_LANGUAGE,
   DISCLAIMER_ROUTE,
+  ErrorCode,
   EVENTS_FEEDBACK_TYPE,
   EVENTS_ROUTE,
+  fromError,
   INTEGREAT_INSTANCE,
   OFFER_FEEDBACK_TYPE,
   OFFERS_FEEDBACK_TYPE,
@@ -19,6 +21,7 @@ import FeedbackBox from './FeedbackBox'
 import type { SendingStatusType } from './FeedbackModal'
 import { cmsApiBaseUrl } from '../constants/urls'
 import { RouteType } from '../routes'
+import { reportError } from '../services/sentry'
 
 type PropsType = {
   alias?: string
@@ -87,6 +90,9 @@ export const FeedbackBoxContainer = ({
       onSubmit('SUCCESS')
     } catch (e) {
       console.error(e)
+      if (fromError(e) !== ErrorCode.NetworkConnectionFailed) {
+        reportError(e)
+      }
       onSubmit('ERROR')
     }
   }, [route, path, alias, isPositiveRatingSelected, comment, contactMail, cityCode, language, onSubmit])
